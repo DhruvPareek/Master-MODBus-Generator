@@ -1,14 +1,9 @@
 'use client';
-
+// import Papa from "papaparse";
 import { useState } from "react";
 
 export default function Home() {
-    const [inputs, setInputs] = useState({
-      input1: "",//Parameter Address
-      input2: "",//Function Code
-      input3: "",//Value to write if writing
-    });
-    
+  const [rows, setRows] = useState([{ input1: "", input2: "", input3: "" }]);    
 
     const [parameters, setParameters] = useState({
       parameterName: "",
@@ -22,34 +17,52 @@ export default function Home() {
       parameterOPTS: "", // OPTS( -10, 10, 1 )
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const { name, value } = e.target;
-      setInputs((prevInputs) => ({
-        ...prevInputs,
-        [name]: value,
-      }));
-    };
-  
+  const handleChange = (e, index) => {
+    const { name, value } = e.target;//Name is input1, input2, or input3. Value is the value of the input box
+    const updatedRows = rows.map((row, i) => 
+      i === index ? { ...row, [name]: value } : row
+    );
+    setRows(updatedRows);
+  };
 
+  const handleRemoveRow = (index) => {
+    const updatedRows = rows.filter((row, i) => i !== index);
+    setRows(updatedRows);
+  }
+
+  const handleAddRow = () => {
+    setRows([...rows, { input1: "", input2: "", input3: "" }]);
+  };
+
+  const inputsToParameters = (input1, input2, input3) => {
+    
+  };
+  
     // Master C file generated
     // Input 1: ${inputs.input1}
     // Input 2: ${inputs.input2}
     // Input 3: ${inputs.input3}
   const handleDownload = () => {
-    const newParameters = {
-      parameterName: `ParamName_${inputs.input1}`,
+    const newParameters = rows.map(row => ({
+      parameterName: `ParamName_${row.input1}`,
       parameterUnits: "Volts",
-      parameterRegisterType: inputs.input2 === "3" ? "MB_PARAM_HOLDING" : "MB_PARAM_INPUT", //MB_PARAM_INPUT vs MB_PARAM_HOLDING vs...
-      parameterRegAddress: inputs.input1,  //register address
-      parameterRegSize: "2",
-      parameterOffset: inputs.input2 === "3" ? "HOLD_OFFSET(input_data0)" : "INPUT_OFFSET(input_data0)", //INPUT_OFFSET(input_data0) vs HOLD_OFFSET(input_data0)
+      parameterRegisterType: row.input2 === "3" ? "MB_PARAM_HOLDING" : "MB_PARAM_INPUT", //MB_PARAM_INPUT vs MB_PARAM_HOLDING vs...
+      parameterRegAddress: row.input1,  //register address
+      parameterRegSize: 2,
+      parameterOffset: row.input2 === "3" ? "HOLD_OFFSET(input_data0)" : "INPUT_OFFSET(input_data0)", //INPUT_OFFSET(input_data0) vs HOLD_OFFSET(input_data0)
       parameterDataType: "PARAM_TYPE_FLOAT", //PARAM_TYPE_FLOAT vs PARAM_TYPE_U8 vs PARAM_TYPE_U16
-      parameterDataSize: "4",
+      parameterDataSize: 4,
       parameterOPTS: "OPTS(-10, 10, 1)", //OPTS( -10, 10, 1 )
-    };
+    }));
 
-    const content = `
-    /*
+    const parametersContent = newParameters.map(param => `
+    { CID_INP_DATA_0, STR("${param.parameterName}"), STR(${param.parameterUnits}), MB_DEVICE_ADDR1, ${param.parameterRegisterType},
+    ${param.parameterRegAddress}, ${param.parameterRegSize}, ${param.parameterOffset}, ${param.parameterDataType},
+    ${param.parameterDataSize}, ${param.parameterOPTS}, PAR_PERMS_READ_WRITE_TRIGGER }
+  `).join(',\n');
+
+  const content = `
+  /*
     * SPDX-FileCopyrightText: 2016-2023 Espressif Systems (Shanghai) CO LTD
     *
     * SPDX-License-Identifier: Apache-2.0
@@ -125,9 +138,7 @@ export default function Home() {
    // Access Mode - can be used to implement custom options for processing of characteristic (Read/Write restrictions, factory mode values and etc).
    const mb_parameter_descriptor_t device_parameters[] = {
        // { CID, Param Name, Units, Modbus Slave Addr, Modbus Reg Type, Reg Start, Reg Size, Instance Offset, Data Type, Data Size, Parameter Options, Access Mode}
-       { CID_INP_DATA_0, STR("${parameters.parameterName}"), STR(${parameters.parameterUnits}), MB_DEVICE_ADDR1, ${parameters.parameterRegisterType},
-       ${parameters.parameterRegAddress}, ${parameters.parameterRegSize}, ${parameters.parameterOffset}, ${parameters.parameterDataType},
-       ${parameters.parameterDataSize}, ${parameters.parameterOPTS}, PAR_PERMS_READ_WRITE_TRIGGER }
+       ${parametersContent}
    };
    
    // Calculate number of parameters in the table
@@ -358,53 +369,68 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="flex flex-row items-center gap-4">
-        <div className="flex flex-col gap-2">
+      <div className="flex flex-row items-center gap-20 mb-4 -ml-8">
         <label>Parameter Address</label>
-        <input
-          type="text"
-          name="input1"
-          value={inputs.input1}
-          onChange={handleChange}
-          className="border rounded px-2 py-1"
-          placeholder="Input 1"
-        />
-        </div>
-        <div className="flex flex-col gap-2">
         <label>Function Code</label>
-        <input
-          type="text"
-          name="input2"
-          value={inputs.input2}
-          onChange={handleChange}
-          className="border rounded px-2 py-1"
-          placeholder="Input 2"
-        />
-        </div>
-        <div className="flex flex-col gap-2">
-        <label>Value to write if writing</label>
-        <input
-          type="text"
-          name="input3"
-          value={inputs.input3}
-          onChange={handleChange}
-          className="border rounded px-2 py-1"
-          placeholder="Input 3"
-        />
-        </div>
-              <button
-        // onClick={handleAddRow}
-        className="mt-4 bg-green-500 text-white px-4 py-2 rounded"
-      >
-        + Add Row
-      </button>
+        <label>Value to Write if Writing</label>
       </div>
-      <button
+      {rows.map((row, index) => (
+        <div key={index} className="flex flex-row items-center gap-4 mb-4">
+          <div className="flex flex-col gap-2">
+            <input
+              type="text"
+              name="input1"
+              value={row.input1}
+              onChange={(e) => handleChange(e, index)}
+              className="border rounded px-2 py-1"
+              placeholder="Input 1"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <input
+              type="text"
+              name="input2"
+              value={row.input2}
+              onChange={(e) => handleChange(e, index)}
+              className="border rounded px-2 py-1"
+              placeholder="Input 2"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <input
+              type="text"
+              name="input3"
+              value={row.input3}
+              onChange={(e) => handleChange(e, index)}
+              className="border rounded px-2 py-1"
+              placeholder="Input 3"
+            />
+          </div>
+          <button
+            onClick={() => handleRemoveRow(index)}
+            className="flex items-center justify-center w-8 h-8 bg-red-500 hover:bg-red-700 text-white rounded"
+          >
+            <div className="relative flex items-center justify-center w-full h-full">
+              <div className="absolute w-[4px] h-full bg-white transform rotate-45" />
+              <div className="absolute w-[4px] h-full bg-white transform -rotate-45" />
+            </div>
+          </button>
+        </div>
+      ))}
+      <div className="flex flex-row gap-2">
+        <button
+          onClick={handleAddRow}
+          className="mt-4 bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded"
+        >
+          + Add Row
+        </button>
+        <button
           onClick={handleDownload}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+          className="mt-4 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded"
         >
           Download master.c
         </button>
+      </div>
     </main>
-  );
+  );  
 }
