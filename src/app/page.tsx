@@ -105,17 +105,22 @@ export default function Home() {
   }, []);
   
     // Master C file generated
-    // Input 1: ${inputs.input1}
-    // Input 2: ${inputs.input2}
-    // Input 3: ${inputs.input3}
   const handleDownload = () => {
-    const newParameters = inputsToParameters(rows[0].input1, rows[0].input2, rows[0].input3);
+    let newParameters = [];
+    newParameters = rows.map((row, i) => 
+      inputsToParameters(row.input1, row.input2, row.input3)
+    );
+      //inputsToParameters(rows[0].input1, rows[0].input2, rows[0].input3);
+    // const updatedRows = rows.map((row, i) => 
+    //   i === index ? { ...row, [name]: value } : row
+    // );
 
-    const parametersContent = `
-        { CID_INP_DATA_0, STR("${newParameters[0]}"), STR("${newParameters[1]}"), MB_DEVICE_ADDR1, ${newParameters[2]},
-        ${newParameters[3]}, ${newParameters[4]}, ${newParameters[5]}, ${newParameters[6]}, ${newParameters[7]},
-        ${newParameters[8]}, PAR_PERMS_READ_WRITE_TRIGGER }
-    `;
+
+    const parametersContent = newParameters.map((params) => `
+    { CID_INP_DATA_0, STR("${params[0]}"), STR("${params[1]}"), MB_DEVICE_ADDR1, ${params[2]},
+    ${params[3]}, ${params[4]}, ${params[5]}, ${params[6]}, ${params[7]},
+    ${params[8]}, PAR_PERMS_READ_WRITE_TRIGGER }
+  `).join(',');
 
   const content = `
   /*

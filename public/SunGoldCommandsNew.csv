@@ -1,0 +1,83 @@
+Address,Length,English_Name,R_W,Function Code,Magnification,Unit,Display Format,Signed_Unsigned,Minimum,Maximum,Default,Remark
+A,1,MinorVersion,R,3,1,-,%d,Unsigned,-,-,-,Reserved
+B,1,MachType,R,3,1,-,%d,Unsigned,-,-,-,Product type 00 (domestic controller) 01 (controller for street light) 03 (grid-connected inverter) 04 (all-in-one solar charger inverter) 05 (power frequency off-grid)
+16,2,HardWareVersion,R,3,1,-,%d,Unsigned,-,-,-,"0×0016: control panel version (e.g.,100 for V1.00) 0×0017: power amplifier board version (e.g.,100 for V1.00), reserved"
+1A,1,Rs485Addr,R,3,1,-,%d,Unsigned,-,-,-,"Rs485 address, which is read-only"
+1B,1,MachModelNum2,R,3,1,-,%d,Unsigned,-,-,-,-
+1C,2,RS485Version,R,3,1,-,%x,Unsigned,-,-,-,"0×001C: protocol version (e.g.,100 for V1.00) 0×001D: reserved"
+21,20,CpuBuidTime,R,3,1,-,%s,Unsigned,-,-,-,"String format, with the low bytes of each register valid and the high bytes invalid"
+35,20,ProductSNStr,R,3,1,-,%s,Unsigned,-,-,-,"String format, with the low bytes of each register valid and the high bytes invalid"
+100,1,BatSoc,R,3,1,-,%d,Unsigned,-,-,-,Percentage of remaining battery power
+101,1,BatVolt,R,3,0.1,V,%.1fV,Unsigned,-,-,-,"Battery voltage (e.g., 485 for 48.5 V)"
+102,1,ChargeCurr,R,3,0.1,A,%.1fA,Signed,-,-,-,"Battery current (e.g., 500 for 50.0A) Current greater than 0 indicates discharging; and current less than 0 indicates charging."
+103,1,DeviceBatTemper,R,3,0.1,°C,%.1f℃,Signed,-,-,-,Battery temperature
+104,1,Battery SOH,R,3,0.1,V,%.1fV,Unsigned,-,-,-,Reserved
+105,1,Battery rated capacity,R,3,0.01,A,%.2fA,Unsigned,-,-,-,Reserved
+106,1,Battery remain capacity,R,3,1,W,%d,Unsigned,-,-,-,Reserved
+107,1,Pv1Volt,R,3,0.1,V,%.1fV,Unsigned,-,-,-,Voltage of PV panel 1
+108,1,Pv1Curr,R,3,0.1,A,%.1fA,Unsigned,-,-,-,Current of PV panel 1
+109,1,Pv1ChargePower,R,3,1,W,%d,Unsigned,-,-,-,Power of PV panel 1
+10A,1,PvTotalPower,R,3,1,-,%d,Unsigned,-,-,-,Total PV power
+10B,1,ChargeState,R,3,1,-,%d,Unsigned,-,-,-,0×0000: Charge off 0×0001: Quick charge 0×0002: Const voltage charge 0×0004: Float charge 0×0005: Reserved 0×0006: Li battery activate 0×0008: Full
+10C,1,BatteryCycleCount,R,3,2,-,%d,Unsigned,-,-,-,-
+10D,1,DcDataRevserved04,R,3,1,-,%d,Unsigned,-,-,-,Reserved
+10E,1,ChargePower,R,3,1,W,%dW,Unsigned,-,-,-,PV charging power + AC charging power
+10F,1,Pv2Volt,R,3,0.1,V,%.1fV,Unsigned,-,-,-,Voltage of PV panel 2
+110,1,Pv2Curr,R,3,0.1,A,%.1fA,Unsigned,-,-,-,Current of PV panel 2
+111,1,Pv2ChargePower,R,3,1,W,%d,Unsigned,-,-,-,Power of PV panel 2
+112,1,BatBmsVolt,R,3,0.1,V,%.1fV,Unsigned,-,-,-,-
+113,1,BatBmsCurr,R,3,0.1,A,%.1fA,Unsigned,-,-,-,-
+114,1,BatBmsTemp,R,3,0.1,°C,%.1f℃,Unsigned,-,-,-,-
+115,1,BatBmsChgLimitVolt,R,3,0.1,V,%.1fV,Unsigned,-,-,-,-
+116,1,BatBmsChgLimitCurr,R,3,0.1,A,%.1fA,Unsigned,-,-,-,-
+117,1,BatBmsDchgLimitCurr,R,3,0.1,A,%.1fA,Unsigned,-,-,-,-
+118,1,BmsAlarmH,R,3,1,-,%x,Unsigned,-,-,-,-
+119,1,BmsAlarmL,R,3,1,-,%x,Unsigned,-,-,-,-
+11A,1,BmsProtectH,R,3,1,-,%x,Unsigned,-,-,-,-
+11B,1,BmsProtectL,R,3,1,-,%x,Unsigned,-,-,-,-
+200,4,CurrErrReg,R,3,1,-,%x,Unsigned,-,-,-,"Each fault bit represents a fault, with a total of 64 bits. This register is used by the internal debugging."
+204,4,CurrFcode,R,3,1,-,%d,Unsigned,-,-,-,"There are four addresses. Each address stores a fault code corresponding to the current fault. Four fault codes can be displayed at the same time. 0 indicates no fault. If there are two faults, battery under-voltage and inverter overload, the following information is displayed: 0×204: 01 0×205: 14 0×206: 00 0×207: 00"
+20C,3,SysDateTime,RW,3/6,1,-,%zdt,Unsigned,-,-,-,"0×020C: high byte: year, low byte: month 0×020D: high byte: day, low byte: hour 0×020E: high byte: minute, low byte: second The register can be set to adjust the RTC clock"
+20F,1,GridOnRemainTime,R,3,1,s,%d,Unsigned,-,-,-,-
+210,1,MachineState,R,3,1,-,%d,Unsigned,0,-,-,0: Power-on delay<br>1: Standby state<br>2: Initialization<br>3: Self-start<br>4: AC power operation<br>5: AC power reverse<br>6: Inverter to AC power<br>7: AC power to inverter<br>8: Manual shutdown<br>9: E-manual shutdown<br>10: Fault<br><br>Split-phase all-in-one machines and European standard single-phase 8–12 kW machines are as follows:<br>0: Initialization<br>1: Standby state<br>2: AC power operation<br>3: Fault
+211,1,PriorityFlag,R,3,1,-,%d,Unsigned,-,-,-,0: User has not entered password<br>1: The password is entered<br>4: The password of the manufacturer is entered
+212,1,BatVoltSum,R,3,0.1,V,%.1fV,Unsigned,-,-,-,-
+213,1,GridVoltA,R,3,0.1,V,%.1fV,Unsigned,-,-,-,AC power phase-A voltage
+214,1,GridCurrA,R,3,0.01,A,%.1fA,Unsigned,-,-,-,AC power phase-A current
+215,1,GridFreq,R,3,0.01,Hz,%.2fHz,Unsigned,-,-,-,AC power frequency
+216,1,InvVolA,R,3,0.1,V,%.1fV,Unsigned,-,-,-,Inverter phase-A output voltage
+217,1,InvCurA,R,3,0.01,A,%.1fA,Unsigned,-,-,-,Inverter phase-A negative current
+218,1,InvFreq,R,3,0.01,Hz,%.2fHz,Unsigned,-,-,-,-
+219,1,LoadCurA,R,3,0.1,A,%.1fA,Unsigned,-,-,-,Load side phase-A current
+21B,1,LoadActivetPowerA,R,3,1,W,%dVA,Unsigned,-,-,-,Phase-A load apparent power
+21C,1,LoadApparentPowerB,R,3,1,VA,%dVA,Unsigned,-,-,-,Phase-A load apparent power
+21D,1,,R,3,1,mV,%dmV,Unsigned,-,-,-,Unused
+21E,1,LineChgCurr,R,3,0.1,A,%.1fA,Unsigned,-,-,-,Channel current from the AC power on the battery side
+21F,1,LoadRatioA,R,3,1,%,%d%%,Unsigned,-,-,-,Phase-A load ratio
+220,1,LoadRatioA,R,3,1,%,%d%%,Unsigned,-,-,-,Phase-A load ratio
+221,1,TemperDC,R,3,0.1,°C,%.1f°C,Signed,-,-,-,Cooling-fan DC-DC temperature
+222,1,TemperFC,R,3,0.1,°C,%.1f°C,Signed,-,-,-,Cooling-fan DC-AC temperature
+223,1,TemperTR,R,3,0.1,°C,%.1f°C,Signed,-,-,-,Transformer temperature
+224,1,TemperAmb,R,3,0.1,°C,%.1f°C,Signed,-,-,-,Ambient temperature
+225,1,I_buck1,R,3,0.1,A,%.1fA,Unsigned,-,-,-,Charging current from the PV power on the battery side
+226,1,ParallCurRms,R,3,0.1,A,%.1fA,Unsigned,-,-,-,High-pressure parallel use
+227,1,,R,3,1,%,%d%%,Unsigned,-,-,-,Available for customized models only
+228,1,ChargeStatus,R,3,1,%,%d%%,Unsigned,-,-,-,Available for customized models only
+229,1,PBusVolt,R,3,0.1,V,%.1fV,Unsigned,-,-,-,Suitable for the split-phase all-in-one machine and European standard machine of 10 kW
+22A,1,NB_BusVolt,R,3,0.1,V,%.1fV,Unsigned,-,-,-,Suitable for the split-phase all-in-one machine and European standard machine of 10 kW
+22B,1,GridVolB,R,3,0.1,V,%.1fV,Unsigned,-,-,-,AC power phase-B voltage
+22C,1,GridVolC,R,3,0.1,V,%.1fV,Unsigned,-,-,-,AC power phase-C voltage
+22D,1,InvVoltB,R,3,0.1,V,%.1fV,Unsigned,-,-,-,Inverter phase-B output voltage
+22E,1,InvVoltC,R,3,0.1,V,%.1fV,Unsigned,-,-,-,Inverter phase-C output voltage
+22F,1,InvCurB,R,3,0.01,A,%.1fA,Unsigned,-,-,-,Inverter phase-B inductive current
+230,1,InvCurC,R,3,0.01,A,%.1fA,Unsigned,-,-,-,Inverter phase-C inductive current
+231,1,LoadCurB,R,3,0.01,A,%.1fA,Unsigned,-,-,-,Load side phase-B current
+232,1,LoadCurC,R,3,0.01,A,%.1fA,Unsigned,-,-,-,Load side phase-C current
+233,1,LoadActivePowerB,R,3,1,W,%dW,Unsigned,-,-,-,Load side phase-B current
+234,1,LoadApparentPowerC,R,3,1,VA,%dVA,Unsigned,-,-,-,-
+235,1,LoadReactivePowerB,R,3,1,var,%dvar,Unsigned,-,-,-,-
+236,1,LoadReactivePowerC,R,3,1,var,%dvar,Unsigned,-,-,-,-
+237,1,LoadPowerFactorC,R,3,1,%,%d%%,Unsigned,-,-,-,-
+238,1,GridCurC,R,3,0.1,A,%.1fA,Unsigned,-,-,-,-
+239,1,GridActivePowerA,R,3,1,W,%dW,Signed,-,-,-,Greater than 0 for power of grid connection; Less than 0 for power of grid consumption
+23A,1,GridActivePowerB,R,3,1,W,%dW,Signed,-,-,-,Greater than 0 for power of grid connection; Less than 0 for power of grid consumption
