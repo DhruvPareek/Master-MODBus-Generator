@@ -1,6 +1,9 @@
 'use client';
-// import Papa from "papaparse";
-import { useState } from "react";
+import Papa from "papaparse";
+import { useState, useEffect } from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileCsv } from '@fortawesome/free-solid-svg-icons';
+
 
 export default function Home() {
   const [rows, setRows] = useState([{ input1: "", input2: "", input3: "" }]);    
@@ -18,7 +21,7 @@ export default function Home() {
     });
 
   const handleChange = (e, index) => {
-    const { name, value } = e.target;//Name is input1, input2, or input3. Value is the value of the input box
+    const { name, value } = e.target;//name = input1, input2, or input3. value = value typed into the input box
     const updatedRows = rows.map((row, i) => 
       i === index ? { ...row, [name]: value } : row
     );
@@ -35,31 +38,84 @@ export default function Home() {
   };
 
   const inputsToParameters = (input1, input2, input3) => {
-    
+    let parameterVals = [];
+    const regAddr = parseInt(input1, 16); // Ensure input is parsed as hex
+    let index = regAddrToIndex.get(regAddr);
+
+    if (!csvData[index]) {
+      console.error(`Index ${index} not found in csvData`);
+      return [];
+    }
+  
+    parameterVals[0] = String(csvData[index].English_Name);
+    // console.log("English Name: " + csvData[index].English_Name);
+    parameterVals[1] = csvData[index].Unit;
+    // console.log("Unit: " + csvData[index].Unit);
+    parameterVals[2] = "MB_PARAM_HOLDING";
+    // console.log("MB_PARAM_HOLDING " + parameterVals[2]);
+    parameterVals[3] = input1;
+    // console.log("RegAddr " + parameterVals[3]);
+    parameterVals[4] = 1;
+    // console.log("RegSize " + parameterVals[4]);
+    parameterVals[5] = "HOLD_OFFSET(input_data0)";
+    // console.log("HOLD_OFFSET(input_data0) " + parameterVals[5]);
+    //https://docs.espressif.com/projects/esp-modbus/en/latest/esp32/overview_messaging_and_mapping.html#modbus-mapping-complex-data-types
+    if(input1 == 0x21 || input1 == 0x35){
+      parameterVals[6] = "PARAM_TYPE_ASCII";
+      parameterVals[8] = "OPTS( 0, 100, 1 )"; //<-- SHOULD NOT BE A STRING
+    }else if(csvData[index].Length == 1 && csvData[index].Signed_Unsigned == "Unsigned"){
+        parameterVals[6] = "PARAM_TYPE_U8";
+        parameterVals[8] = "OPTS( 0x0, 0xFF, 1 )"; //<-- SHOULD NOT BE A STRING
+    } else if(csvData[index].Length == 1 && csvData[index].Signed_Unsigned == "Signed"){
+        parameterVals[6] = "PARAM_TYPE_I8_A"; //could be PARAM_TYPE_I8_B
+        parameterVals[8] = "OPTS( 0x80, 0xEF, 1 )"; //<-- SHOULD NOT BE A STRING
+    } else if (csvData[index].Length == 2 && csvData[index].Signed_Unsigned == "Unsigned"){
+        parameterVals[6] = "PARAM_TYPE_U16";
+        parameterVals[8] = "OPTS( 0x0, 0xFFFF, 1 )"; //<-- SHOULD NOT BE A STRING
+    } else if (csvData[index].Length == 2 && csvData[index].Signed_Unsigned == "Signed"){
+        parameterVals[6] = "PARAM_TYPE_I16_AB"; //could be PARAM_TYPE_I16_BA
+        parameterVals[8] = "OPTS( 0x8000, 0xEFFF, 1 )"; //<-- SHOULD NOT BE A STRING
+    } else if(csvData[index].Length == 4 && csvData[index].Signed_Unsigned == "Unsigned"){
+        parameterVals[6] = "PARAM_TYPE_U32";
+        parameterVals[8] = "OPTS( 0x0, 0xFFFFFFFF, 1 )"; //<-- SHOULD NOT BE A STRING
+    } else if(csvData[index].Length == 4 && csvData[index].Signed_Unsigned == "Signed"){
+        parameterVals[6] = "PARAM_TYPE_I32_ABCD"; //could be PARAM_TYPE_I32_BADC, PARAM_TYPE_I32_CDAB, PARAM_TYPE_I32_DCBA
+        parameterVals[8] = "OPTS( 0x80000000, 0xEFFFFFFF, 1 )"; //<-- SHOULD NOT BE A STRING
+    }
+    // console.log("Data Type: " + parameterVals[6]);
+    parameterVals[7] = csvData[index].Length;
+    // console.log("Data Size: " + parameterVals[7]);
+    // console.log("OPTS: " + parameterVals[8]);
+    return parameterVals;
   };
+
+  const [csvData, setCsvData] = useState([]);
+  useEffect(() => {
+    // Fetch the CSV file from the public directory
+    fetch("/SunGoldCommandsNew.csv")
+      .then((response) => response.text())
+      .then((text) => {
+        Papa.parse(text, {
+          header: true,
+          complete: (results) => {
+            setCsvData(results.data);
+          },
+        });
+      });
+  }, []);
   
     // Master C file generated
     // Input 1: ${inputs.input1}
     // Input 2: ${inputs.input2}
     // Input 3: ${inputs.input3}
   const handleDownload = () => {
-    const newParameters = rows.map(row => ({
-      parameterName: `ParamName_${row.input1}`,
-      parameterUnits: "Volts",
-      parameterRegisterType: row.input2 === "3" ? "MB_PARAM_HOLDING" : "MB_PARAM_INPUT", //MB_PARAM_INPUT vs MB_PARAM_HOLDING vs...
-      parameterRegAddress: row.input1,  //register address
-      parameterRegSize: 2,
-      parameterOffset: row.input2 === "3" ? "HOLD_OFFSET(input_data0)" : "INPUT_OFFSET(input_data0)", //INPUT_OFFSET(input_data0) vs HOLD_OFFSET(input_data0)
-      parameterDataType: "PARAM_TYPE_FLOAT", //PARAM_TYPE_FLOAT vs PARAM_TYPE_U8 vs PARAM_TYPE_U16
-      parameterDataSize: 4,
-      parameterOPTS: "OPTS(-10, 10, 1)", //OPTS( -10, 10, 1 )
-    }));
+    const newParameters = inputsToParameters(rows[0].input1, rows[0].input2, rows[0].input3);
 
-    const parametersContent = newParameters.map(param => `
-    { CID_INP_DATA_0, STR("${param.parameterName}"), STR(${param.parameterUnits}), MB_DEVICE_ADDR1, ${param.parameterRegisterType},
-    ${param.parameterRegAddress}, ${param.parameterRegSize}, ${param.parameterOffset}, ${param.parameterDataType},
-    ${param.parameterDataSize}, ${param.parameterOPTS}, PAR_PERMS_READ_WRITE_TRIGGER }
-  `).join(',\n');
+    const parametersContent = `
+        { CID_INP_DATA_0, STR("${newParameters[0]}"), STR("${newParameters[1]}"), MB_DEVICE_ADDR1, ${newParameters[2]},
+        ${newParameters[3]}, ${newParameters[4]}, ${newParameters[5]}, ${newParameters[6]}, ${newParameters[7]},
+        ${newParameters[8]}, PAR_PERMS_READ_WRITE_TRIGGER }
+    `;
 
   const content = `
   /*
@@ -367,10 +423,96 @@ export default function Home() {
     document.body.removeChild(link);
   };
 
+  const regAddrToIndex = new Map([
+    [0xA, 0],
+    [0xB, 1],
+    [0x16, 2],
+    [0x1A, 3],
+    [0x1B, 4],
+    [0x1C, 5],
+    [0x21, 6],
+    [0x35, 7],
+    [0x100, 8],
+    [0x101, 9],
+    [0x102, 10],
+    [0x103, 11],
+    [0x104, 12],
+    [0x105, 13],
+    [0x106, 14],
+    [0x107, 15],
+    [0x108, 16],
+    [0x109, 17],
+    [0x10A, 18],
+    [0x10B, 19],
+    [0x10C, 20],
+    [0x10D, 21],
+    [0x10E, 22],
+    [0x10F, 23],
+    [0x110, 24],
+    [0x111, 25],
+    [0x112, 26],
+    [0x113, 27],
+    [0x114, 28],
+    [0x115, 29],
+    [0x116, 30],
+    [0x117, 31],
+    [0x118, 32],
+    [0x119, 33],
+    [0x11A, 34],
+    [0x11B, 35],
+    [0x200, 36],
+    [0x204, 37],
+    [0x20C, 38],
+    [0x20F, 39],
+    [0x210, 40],
+    [0x211, 41],
+    [0x212, 42],
+    [0x213, 43],
+    [0x214, 44],
+    [0x215, 45],
+    [0x216, 46],
+    [0x217, 47],
+    [0x218, 48],
+    [0x219, 49],
+    [0x21B, 50],
+    [0x21C, 51],
+    [0x21E, 52],
+    [0x21F, 53],
+    [0x21A, 62],
+    [0x21D, 65],
+    [0x220, 68],
+    [0x221, 69],
+    [0x222, 70],
+    [0x223, 71],
+    [0x224, 72],
+    [0x225, 73],
+    [0x226, 74],
+    [0x227, 75],
+    [0x228, 76],
+    [0x229, 77],
+    [0x22A, 78],
+    [0x22B, 79],
+    [0x22C, 80],
+    [0x22D, 81],
+    [0x22E, 82],
+    [0x22F, 83],
+    [0x230, 84],
+    [0x231, 85],
+    [0x232, 86],
+    [0x233, 87],
+    [0x234, 88],
+    [0x235, 89],
+    [0x236, 90],
+    [0x237, 91],
+    [0x238, 92],
+    [0x239, 93],
+    [0x23A, 94]
+  ]);
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="flex flex-row items-center gap-20 mb-4 -ml-8">
-        <label>Parameter Address</label>
+      <div className="flex flex-row items-center gap-16 mb-4 -ml-14">
+        <label>Parameter Address (Hex)</label>
         <label>Function Code</label>
         <label>Value to Write if Writing</label>
       </div>
@@ -383,7 +525,7 @@ export default function Home() {
               value={row.input1}
               onChange={(e) => handleChange(e, index)}
               className="border rounded px-2 py-1"
-              placeholder="Input 1"
+              placeholder="Input 1 (ex: 0xA2B)"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -393,7 +535,7 @@ export default function Home() {
               value={row.input2}
               onChange={(e) => handleChange(e, index)}
               className="border rounded px-2 py-1"
-              placeholder="Input 2"
+              placeholder="Input 2 (ex: 03 or 06)"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -430,7 +572,15 @@ export default function Home() {
         >
           Download master.c
         </button>
+        <a
+          href="/SunGoldCommandsNew.csv"
+          download
+          className="mt-4 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center"
+        >
+          <FontAwesomeIcon icon={faFileCsv} className="mr-2" />
+          SunGold Commands
+        </a>
       </div>
-    </main>
+      </main>
   );  
 }
