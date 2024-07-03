@@ -4,11 +4,19 @@ import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileCsv, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 
+type CsvData = {
+  English_Name: string;
+  Unit: string;
+  Display_Format: string;
+  Length: number;
+  Signed_Unsigned: string;
+}[];
+
 
 export default function Home() {
   const [rows, setRows] = useState([{ input1: "", input2: "", input3: "" }]);    
   const [selectedInverter, setSelectedInverter] = useState('Sungold');
-  const [csvData, setCsvData] = useState([]);
+  const [csvData, setCsvData] = useState<CsvData>([]);
 
   const options = [
     { value: "0xA", label: "0xA" },
@@ -188,13 +196,13 @@ export default function Home() {
         Papa.parse(text, {
           header: true,
           complete: (results) => {
-            setCsvData(results.data);
+            setCsvData(results.data as CsvData);
           },
         });
       });
   }, []);
 
-  const handleChange = (e, index) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, index: number) => {
     const { name, value } = e.target;//name = input1, input2, or input3. value = value typed into the input box
     const updatedRows = rows.map((row, i) => 
       i === index ? { ...row, [name]: value } : row
@@ -202,7 +210,7 @@ export default function Home() {
     setRows(updatedRows);
   };
 
-  const handleRemoveRow = (index) => {
+  const handleRemoveRow = (index: number) => {
     const updatedRows = rows.filter((row, i) => i !== index);
     setRows(updatedRows);
   }
@@ -211,19 +219,20 @@ export default function Home() {
     setRows([...rows, { input1: "", input2: "", input3: "" }]);
   };
 
-  const handleInverterChange = (e) => {
+  const handleInverterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedInverter(e.target.value);
   };
 
-  const inputsToParameters = (input1, input2, input3) => {
+  const inputsToParameters = (input1: string, input2: string, input3: string) => {
     let parameterVals = [];
     const regAddr = parseInt(input1, 16); // Ensure input is parsed as hex
     let index = regAddrToIndex.get(regAddr);
 
-    if (!csvData[index]) {
+    if (index === undefined || !csvData[index]) {
       console.error(`Index ${index} not found in csvData`);
       return [];
     }
+
   
     parameterVals[0] = String(csvData[index].English_Name);
     parameterVals[1] = csvData[index].Unit;
@@ -232,7 +241,7 @@ export default function Home() {
     parameterVals[4] = 1;
     parameterVals[5] = "HOLD_OFFSET(input_data0)";
     //https://docs.espressif.com/projects/esp-modbus/en/latest/esp32/overview_messaging_and_mapping.html#modbus-mapping-complex-data-types
-    if(input1 == 0x21 || input1 == 0x35){
+    if(regAddr == 0x21 || regAddr == 0x35){
       parameterVals[6] = "PARAM_TYPE_ASCII";
       parameterVals[8] = "OPTS( 0, 100, 1 )";
     }else if(csvData[index].Display_Format == "%.1fV" || csvData[index].Display_Format == "%.1fA" || csvData[index].Display_Format == "%.1f℃" || csvData[index].Display_Format == "%.2fA" || csvData[index].Display_Format == "%.2fHz"){
@@ -243,7 +252,7 @@ export default function Home() {
         parameterVals[6] = "PARAM_TYPE_U8";
         parameterVals[8] = "OPTS( 0x0, 0xFF, 1 )";
     } else if(csvData[index].Length == 1 && csvData[index].Signed_Unsigned == "Signed"){
-        console.log("data tpye: " + csvData[index].Data_Type);
+        console.log("data tpye: " + csvData[index].Display_Format);
         parameterVals[6] = "PARAM_TYPE_I8_A"; //could be PARAM_TYPE_I8_B
         parameterVals[8] = "OPTS( 0x80, 0xEF, 1 )";
     } else if (csvData[index].Length == 2 && csvData[index].Signed_Unsigned == "Unsigned"){
