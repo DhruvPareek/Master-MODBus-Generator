@@ -1,4 +1,4 @@
-Address,Length,English_Name,R_W,Function Code,Magnification,Unit,Display Format,Signed_Unsigned,Minimum,Maximum,Default,Remark
+Address,Length,English_Name,R_W,Function Code,Magnification,Unit,Display_Format,Signed_Unsigned,Minimum,Maximum,Default,Remark
 A,1,MinorVersion,R,3,1,-,%d,Unsigned,-,-,-,Reserved
 B,1,MachType,R,3,1,-,%d,Unsigned,-,-,-,Product type 00 (domestic controller) 01 (controller for street light) 03 (grid-connected inverter) 04 (all-in-one solar charger inverter) 05 (power frequency off-grid)
 16,2,HardWareVersion,R,3,1,-,%d,Unsigned,-,-,-,"0×0016: control panel version (e.g.,100 for V1.00) 0×0017: power amplifier board version (e.g.,100 for V1.00), reserved"
@@ -37,7 +37,6 @@ B,1,MachType,R,3,1,-,%d,Unsigned,-,-,-,Product type 00 (domestic controller) 01 
 11B,1,BmsProtectL,R,3,1,-,%x,Unsigned,-,-,-,-
 200,4,CurrErrReg,R,3,1,-,%x,Unsigned,-,-,-,"Each fault bit represents a fault, with a total of 64 bits. This register is used by the internal debugging."
 204,4,CurrFcode,R,3,1,-,%d,Unsigned,-,-,-,"There are four addresses. Each address stores a fault code corresponding to the current fault. Four fault codes can be displayed at the same time. 0 indicates no fault. If there are two faults, battery under-voltage and inverter overload, the following information is displayed: 0×204: 01 0×205: 14 0×206: 00 0×207: 00"
-20C,3,SysDateTime,RW,3/6,1,-,%zdt,Unsigned,-,-,-,"0×020C: high byte: year, low byte: month 0×020D: high byte: day, low byte: hour 0×020E: high byte: minute, low byte: second The register can be set to adjust the RTC clock"
 20F,1,GridOnRemainTime,R,3,1,s,%d,Unsigned,-,-,-,-
 210,1,MachineState,R,3,1,-,%d,Unsigned,0,-,-,0: Power-on delay<br>1: Standby state<br>2: Initialization<br>3: Self-start<br>4: AC power operation<br>5: AC power reverse<br>6: Inverter to AC power<br>7: AC power to inverter<br>8: Manual shutdown<br>9: E-manual shutdown<br>10: Fault<br><br>Split-phase all-in-one machines and European standard single-phase 8–12 kW machines are as follows:<br>0: Initialization<br>1: Standby state<br>2: AC power operation<br>3: Fault
 211,1,PriorityFlag,R,3,1,-,%d,Unsigned,-,-,-,0: User has not entered password<br>1: The password is entered<br>4: The password of the manufacturer is entered

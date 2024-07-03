@@ -2,23 +2,197 @@
 import Papa from "papaparse";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileCsv } from '@fortawesome/free-solid-svg-icons';
+import { faFileCsv, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 
 
 export default function Home() {
   const [rows, setRows] = useState([{ input1: "", input2: "", input3: "" }]);    
+  const [selectedInverter, setSelectedInverter] = useState('Sungold');
+  const [csvData, setCsvData] = useState([]);
 
-    const [parameters, setParameters] = useState({
-      parameterName: "",
-      parameterUnits: "",
-      parameterRegisterType: "", // MB_PARAM_INPUT vs MB_PARAM_HOLDING
-      parameterRegAddress: "", // register address
-      parameterRegSize: "",
-      parameterOffset: "", // INPUT_OFFSET(input_data0) vs HOLD_OFFSET(input_data0)
-      parameterDataType: "", // PARAM_TYPE_FLOAT vs PARAM_TYPE_U8 vs PARAM_TYPE_U16
-      parameterDataSize: "",
-      parameterOPTS: "", // OPTS( -10, 10, 1 )
-    });
+  const options = [
+    { value: "0xA", label: "0xA" },
+    { value: "0xB", label: "0xB" },
+    { value: "0x16", label: "0x16" },
+    { value: "0x1A", label: "0x1A" },
+    { value: "0x1B", label: "0x1B" },
+    { value: "0x1C", label: "0x1C" },
+    { value: "0x21", label: "0x21" },
+    { value: "0x35", label: "0x35" },
+    { value: "0x100", label: "0x100" },
+    { value: "0x101", label: "0x101" },
+    { value: "0x102", label: "0x102" },
+    { value: "0x103", label: "0x103" },
+    { value: "0x104", label: "0x104" },
+    { value: "0x105", label: "0x105" },
+    { value: "0x106", label: "0x106" },
+    { value: "0x107", label: "0x107" },
+    { value: "0x108", label: "0x108" },
+    { value: "0x109", label: "0x109" },
+    { value: "0x10A", label: "0x10A" },
+    { value: "0x10B", label: "0x10B" },
+    { value: "0x10C", label: "0x10C" },
+    { value: "0x10D", label: "0x10D" },
+    { value: "0x10E", label: "0x10E" },
+    { value: "0x10F", label: "0x10F" },
+    { value: "0x110", label: "0x110" },
+    { value: "0x111", label: "0x111" },
+    { value: "0x112", label: "0x112" },
+    { value: "0x113", label: "0x113" },
+    { value: "0x114", label: "0x114" },
+    { value: "0x115", label: "0x115" },
+    { value: "0x116", label: "0x116" },
+    { value: "0x117", label: "0x117" },
+    { value: "0x118", label: "0x118" },
+    { value: "0x119", label: "0x119" },
+    { value: "0x11A", label: "0x11A" },
+    { value: "0x11B", label: "0x11B" },
+    { value: "0x200", label: "0x200" },
+    { value: "0x204", label: "0x204" },
+    { value: "0x20F", label: "0x20F" },
+    { value: "0x210", label: "0x210" },
+    { value: "0x211", label: "0x211" },
+    { value: "0x212", label: "0x212" },
+    { value: "0x213", label: "0x213" },
+    { value: "0x214", label: "0x214" },
+    { value: "0x215", label: "0x215" },
+    { value: "0x216", label: "0x216" },
+    { value: "0x217", label: "0x217" },
+    { value: "0x218", label: "0x218" },
+    { value: "0x219", label: "0x219" },
+    { value: "0x21B", label: "0x21B" },
+    { value: "0x21C", label: "0x21C" },
+    { value: "0x21D", label: "0x21D" },
+    { value: "0x21E", label: "0x21E" },
+    { value: "0x21F", label: "0x21F" },
+    { value: "0x220", label: "0x220" },
+    { value: "0x221", label: "0x221" },
+    { value: "0x222", label: "0x222" },
+    { value: "0x223", label: "0x223" },
+    { value: "0x224", label: "0x224" },
+    { value: "0x225", label: "0x225" },
+    { value: "0x226", label: "0x226" },
+    { value: "0x227", label: "0x227" },
+    { value: "0x228", label: "0x228" },
+    { value: "0x229", label: "0x229" },
+    { value: "0x22A", label: "0x22A" },
+    { value: "0x22B", label: "0x22B" },
+    { value: "0x22C", label: "0x22C" },
+    { value: "0x22D", label: "0x22D" },
+    { value: "0x22E", label: "0x22E" },
+    { value: "0x22F", label: "0x22F" },
+    { value: "0x230", label: "0x230" },
+    { value: "0x231", label: "0x231" },
+    { value: "0x232", label: "0x232" },
+    { value: "0x233", label: "0x233" },
+    { value: "0x234", label: "0x234" },
+    { value: "0x235", label: "0x235" },
+    { value: "0x236", label: "0x236" },
+    { value: "0x237", label: "0x237" },
+    { value: "0x238", label: "0x238" },
+    { value: "0x239", label: "0x239" },
+    { value: "0x23A", label: "0x23A" }
+  ];
+  
+  const regAddrToIndex = new Map([
+    [0xA, 0],
+    [0xB, 1],
+    [0x16, 2],
+    [0x1A, 3],
+    [0x1B, 4],
+    [0x1C, 5],
+    [0x21, 6],
+    [0x35, 7],
+    [0x100, 8],
+    [0x101, 9],
+    [0x102, 10],
+    [0x103, 11],
+    [0x104, 12],
+    [0x105, 13],
+    [0x106, 14],
+    [0x107, 15],
+    [0x108, 16],
+    [0x109, 17],
+    [0x10A, 18],
+    [0x10B, 19],
+    [0x10C, 20],
+    [0x10D, 21],
+    [0x10E, 22],
+    [0x10F, 23],
+    [0x110, 24],
+    [0x111, 25],
+    [0x112, 26],
+    [0x113, 27],
+    [0x114, 28],
+    [0x115, 29],
+    [0x116, 30],
+    [0x117, 31],
+    [0x118, 32],
+    [0x119, 33],
+    [0x11A, 34],
+    [0x11B, 35],
+    [0x200, 36],
+    [0x204, 37],
+    [0x20C, 38],
+    [0x20F, 39],
+    [0x210, 40],
+    [0x211, 41],
+    [0x212, 42],
+    [0x213, 43],
+    [0x214, 44],
+    [0x215, 45],
+    [0x216, 46],
+    [0x217, 47],
+    [0x218, 48],
+    [0x219, 49],
+    [0x21B, 50],
+    [0x21C, 51],
+    [0x21E, 52],
+    [0x21F, 53],
+    [0x21A, 62],
+    [0x21D, 65],
+    [0x220, 68],
+    [0x221, 69],
+    [0x222, 70],
+    [0x223, 71],
+    [0x224, 72],
+    [0x225, 73],
+    [0x226, 74],
+    [0x227, 75],
+    [0x228, 76],
+    [0x229, 77],
+    [0x22A, 78],
+    [0x22B, 79],
+    [0x22C, 80],
+    [0x22D, 81],
+    [0x22E, 82],
+    [0x22F, 83],
+    [0x230, 84],
+    [0x231, 85],
+    [0x232, 86],
+    [0x233, 87],
+    [0x234, 88],
+    [0x235, 89],
+    [0x236, 90],
+    [0x237, 91],
+    [0x238, 92],
+    [0x239, 93],
+    [0x23A, 94]
+  ]);
+
+  useEffect(() => {
+    // Fetch the CSV file from the public directory
+    fetch("/SunGoldCommandsNew.csv")
+      .then((response) => response.text())
+      .then((text) => {
+        Papa.parse(text, {
+          header: true,
+          complete: (results) => {
+            setCsvData(results.data);
+          },
+        });
+      });
+  }, []);
 
   const handleChange = (e, index) => {
     const { name, value } = e.target;//name = input1, input2, or input3. value = value typed into the input box
@@ -37,6 +211,10 @@ export default function Home() {
     setRows([...rows, { input1: "", input2: "", input3: "" }]);
   };
 
+  const handleInverterChange = (e) => {
+    setSelectedInverter(e.target.value);
+  };
+
   const inputsToParameters = (input1, input2, input3) => {
     let parameterVals = [];
     const regAddr = parseInt(input1, 16); // Ensure input is parsed as hex
@@ -48,75 +226,68 @@ export default function Home() {
     }
   
     parameterVals[0] = String(csvData[index].English_Name);
-    // console.log("English Name: " + csvData[index].English_Name);
     parameterVals[1] = csvData[index].Unit;
-    // console.log("Unit: " + csvData[index].Unit);
     parameterVals[2] = "MB_PARAM_HOLDING";
-    // console.log("MB_PARAM_HOLDING " + parameterVals[2]);
     parameterVals[3] = input1;
-    // console.log("RegAddr " + parameterVals[3]);
     parameterVals[4] = 1;
-    // console.log("RegSize " + parameterVals[4]);
     parameterVals[5] = "HOLD_OFFSET(input_data0)";
-    // console.log("HOLD_OFFSET(input_data0) " + parameterVals[5]);
     //https://docs.espressif.com/projects/esp-modbus/en/latest/esp32/overview_messaging_and_mapping.html#modbus-mapping-complex-data-types
     if(input1 == 0x21 || input1 == 0x35){
       parameterVals[6] = "PARAM_TYPE_ASCII";
-      parameterVals[8] = "OPTS( 0, 100, 1 )"; //<-- SHOULD NOT BE A STRING
+      parameterVals[8] = "OPTS( 0, 100, 1 )";
+    }else if(csvData[index].Display_Format == "%.1fV" || csvData[index].Display_Format == "%.1fA" || csvData[index].Display_Format == "%.1f℃" || csvData[index].Display_Format == "%.2fA" || csvData[index].Display_Format == "%.2fHz"){
+      parameterVals[6] = "PARAM_TYPE_FLOAT";
+      parameterVals[8] = "OPTS( 0x0, 0xFF, 1 )";
     }else if(csvData[index].Length == 1 && csvData[index].Signed_Unsigned == "Unsigned"){
+        console.log("data tpye: " + csvData[index].Display_Format);
         parameterVals[6] = "PARAM_TYPE_U8";
-        parameterVals[8] = "OPTS( 0x0, 0xFF, 1 )"; //<-- SHOULD NOT BE A STRING
+        parameterVals[8] = "OPTS( 0x0, 0xFF, 1 )";
     } else if(csvData[index].Length == 1 && csvData[index].Signed_Unsigned == "Signed"){
+        console.log("data tpye: " + csvData[index].Data_Type);
         parameterVals[6] = "PARAM_TYPE_I8_A"; //could be PARAM_TYPE_I8_B
-        parameterVals[8] = "OPTS( 0x80, 0xEF, 1 )"; //<-- SHOULD NOT BE A STRING
+        parameterVals[8] = "OPTS( 0x80, 0xEF, 1 )";
     } else if (csvData[index].Length == 2 && csvData[index].Signed_Unsigned == "Unsigned"){
         parameterVals[6] = "PARAM_TYPE_U16";
-        parameterVals[8] = "OPTS( 0x0, 0xFFFF, 1 )"; //<-- SHOULD NOT BE A STRING
+        parameterVals[8] = "OPTS( 0x0, 0xFFFF, 1 )";
     } else if (csvData[index].Length == 2 && csvData[index].Signed_Unsigned == "Signed"){
         parameterVals[6] = "PARAM_TYPE_I16_AB"; //could be PARAM_TYPE_I16_BA
-        parameterVals[8] = "OPTS( 0x8000, 0xEFFF, 1 )"; //<-- SHOULD NOT BE A STRING
+        parameterVals[8] = "OPTS( 0x8000, 0xEFFF, 1 )";
     } else if(csvData[index].Length == 4 && csvData[index].Signed_Unsigned == "Unsigned"){
         parameterVals[6] = "PARAM_TYPE_U32";
         parameterVals[8] = "OPTS( 0x0, 0xFFFFFFFF, 1 )"; //<-- SHOULD NOT BE A STRING
     } else if(csvData[index].Length == 4 && csvData[index].Signed_Unsigned == "Signed"){
         parameterVals[6] = "PARAM_TYPE_I32_ABCD"; //could be PARAM_TYPE_I32_BADC, PARAM_TYPE_I32_CDAB, PARAM_TYPE_I32_DCBA
-        parameterVals[8] = "OPTS( 0x80000000, 0xEFFFFFFF, 1 )"; //<-- SHOULD NOT BE A STRING
+        parameterVals[8] = "OPTS( 0x80000000, 0xEFFFFFFF, 1 )";
     }
     // console.log("Data Type: " + parameterVals[6]);
     parameterVals[7] = csvData[index].Length;
-    // console.log("Data Size: " + parameterVals[7]);
     // console.log("OPTS: " + parameterVals[8]);
     return parameterVals;
   };
 
-  const [csvData, setCsvData] = useState([]);
-  useEffect(() => {
-    // Fetch the CSV file from the public directory
-    fetch("/SunGoldCommandsNew.csv")
-      .then((response) => response.text())
-      .then((text) => {
-        Papa.parse(text, {
-          header: true,
-          complete: (results) => {
-            setCsvData(results.data);
-          },
-        });
-      });
-  }, []);
-  
-    // Master C file generated
+    // Master C file generator
   const handleDownload = () => {
     let newParameters = [];
-    newParameters = rows.map((row, i) => 
-      inputsToParameters(row.input1, row.input2, row.input3)
-    );
-      //inputsToParameters(rows[0].input1, rows[0].input2, rows[0].input3);
-    // const updatedRows = rows.map((row, i) => 
-    //   i === index ? { ...row, [name]: value } : row
-    // );
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      if (row.input1 === "" || row.input2 === "") {
+        alert("Inputs 1 and 2 must be filled for every row.");
+        return;
+      }
+      if (!["3", "6", "03", "06"].includes(row.input2)) {
+        alert("Input2 must be 3, 6, 03, or 06.");
+        return;
+      }
+      if (row.input3 === "" && row.input2 === "06") {
+        alert("Wherever funciton code 06 is used, the corresponding input3 must have a write value.");
+        return;
+      }
+      newParameters.push(inputsToParameters(row.input1, row.input2, row.input3));
+    }
 
 
-    const parametersContent = newParameters.map((params) => `
+  const parametersContent = newParameters.map((params) => `
     { CID_INP_DATA_0, STR("${params[0]}"), STR("${params[1]}"), MB_DEVICE_ADDR1, ${params[2]},
     ${params[3]}, ${params[4]}, ${params[5]}, ${params[6]}, ${params[7]},
     ${params[8]}, PAR_PERMS_READ_WRITE_TRIGGER }
@@ -428,110 +599,92 @@ export default function Home() {
     document.body.removeChild(link);
   };
 
-  const regAddrToIndex = new Map([
-    [0xA, 0],
-    [0xB, 1],
-    [0x16, 2],
-    [0x1A, 3],
-    [0x1B, 4],
-    [0x1C, 5],
-    [0x21, 6],
-    [0x35, 7],
-    [0x100, 8],
-    [0x101, 9],
-    [0x102, 10],
-    [0x103, 11],
-    [0x104, 12],
-    [0x105, 13],
-    [0x106, 14],
-    [0x107, 15],
-    [0x108, 16],
-    [0x109, 17],
-    [0x10A, 18],
-    [0x10B, 19],
-    [0x10C, 20],
-    [0x10D, 21],
-    [0x10E, 22],
-    [0x10F, 23],
-    [0x110, 24],
-    [0x111, 25],
-    [0x112, 26],
-    [0x113, 27],
-    [0x114, 28],
-    [0x115, 29],
-    [0x116, 30],
-    [0x117, 31],
-    [0x118, 32],
-    [0x119, 33],
-    [0x11A, 34],
-    [0x11B, 35],
-    [0x200, 36],
-    [0x204, 37],
-    [0x20C, 38],
-    [0x20F, 39],
-    [0x210, 40],
-    [0x211, 41],
-    [0x212, 42],
-    [0x213, 43],
-    [0x214, 44],
-    [0x215, 45],
-    [0x216, 46],
-    [0x217, 47],
-    [0x218, 48],
-    [0x219, 49],
-    [0x21B, 50],
-    [0x21C, 51],
-    [0x21E, 52],
-    [0x21F, 53],
-    [0x21A, 62],
-    [0x21D, 65],
-    [0x220, 68],
-    [0x221, 69],
-    [0x222, 70],
-    [0x223, 71],
-    [0x224, 72],
-    [0x225, 73],
-    [0x226, 74],
-    [0x227, 75],
-    [0x228, 76],
-    [0x229, 77],
-    [0x22A, 78],
-    [0x22B, 79],
-    [0x22C, 80],
-    [0x22D, 81],
-    [0x22E, 82],
-    [0x22F, 83],
-    [0x230, 84],
-    [0x231, 85],
-    [0x232, 86],
-    [0x233, 87],
-    [0x234, 88],
-    [0x235, 89],
-    [0x236, 90],
-    [0x237, 91],
-    [0x238, 92],
-    [0x239, 93],
-    [0x23A, 94]
-  ]);
-
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="flex flex-row items-center gap-16 mb-4 -ml-14">
-        <label>Parameter Address (Hex)</label>
-        <label>Function Code</label>
+      <div className="flex flex-row gap-2 mb-4">
+        Select Your Inverter
+      </div>
+      <div className="flex flex-row gap-2 mb-14">
+        <div className="flex items-center gap-2">
+          <input
+            type="radio"
+            id="sungold"
+            name="options"
+            value="Sungold"
+            checked={selectedInverter === 'Sungold'}
+            onChange={handleInverterChange}
+            className="hidden"
+
+          />
+          <label
+            htmlFor="sungold"
+            className={selectedInverter === 'Sungold' ? 'button-23' : 'button-24'}
+            >
+            Sungold
+          </label>
+
+          <input
+            type="radio"
+            id="meanwell"
+            name="options"
+            value="Meanwell"
+            checked={selectedInverter === 'Meanwell'}
+            onChange={handleInverterChange}
+            className="hidden"
+          />
+          <label
+            htmlFor="meanwell"
+            className={selectedInverter === 'Meanwell' ? 'button-23' : 'button-24'}
+            >
+            Meanwell
+          </label>
+
+          <input
+            type="radio"
+            id="powMr"
+            name="options"
+            value="PowMr"
+            checked={selectedInverter === 'PowMr'}
+            onChange={handleInverterChange}
+            className="hidden"
+          />
+          <label
+            htmlFor="powMr"
+            className={selectedInverter === 'PowMr' ? 'button-23' : 'button-24'}
+            >
+            PowMr
+          </label>
+        </div>
+      </div>
+      <div className="flex flex-row items-center gap-12 mb-4 -ml-16">
+        <label>Reg Address (Hex)</label>
+        <div className="flex flex-row">
+        <label>Function Code </label>
+        <button
+          className="text-white rounded flex items-center ml-2"
+          onClick={() => alert("In this field, enter 03 for reading a value and 06 for writing a value.")}
+        >
+          <FontAwesomeIcon icon={faCircleInfo} style={{color: "#e86bdc",}} className="ml-2" />
+        </button>
+        </div>
         <label>Value to Write if Writing</label>
       </div>
       {rows.map((row, index) => (
         <div key={index} className="flex flex-row items-center gap-4 mb-4">
           <div className="flex flex-col gap-2">
-            <input
-              type="text"
+            <select
               name="input1"
               value={row.input1}
               onChange={(e) => handleChange(e, index)}
               className="border rounded px-2 py-1"
-              placeholder="Input 1 (ex: 0xA2B)"
-            />
+            >
+              <option value="" disabled>Select Input 1</option>
+              {options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="flex flex-col gap-2">
             <input
@@ -567,20 +720,20 @@ export default function Home() {
       <div className="flex flex-row gap-2">
         <button
           onClick={handleAddRow}
-          className="mt-4 bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded"
+          className="mt-8 bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded"
         >
           + Add Row
         </button>
         <button
           onClick={handleDownload}
-          className="mt-4 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded"
+          className="mt-8 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded"
         >
           Download master.c
         </button>
         <a
           href="/SunGoldCommandsNew.csv"
           download
-          className="mt-4 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center"
+          className="mt-8 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center"
         >
           <FontAwesomeIcon icon={faFileCsv} className="mr-2" />
           SunGold Commands
