@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilePdf, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image'
+import Popup from 'reactjs-popup'; 
+import React from 'react'; 
+import 'reactjs-popup/dist/index.css'; 
 
 type CsvData = {
   English_Name: string;
@@ -13,6 +16,18 @@ type CsvData = {
   Signed_Unsigned: string;
 }[];
 
+// export default function PopupGfg(){ 
+//   return( 
+//   <div> 
+//     <h4>NextJs Popup - GeeksforGeeks</h4> 
+//     <Popup trigger={<button> Click to open popup </button>}  
+//      position="right center"> 
+//       <div>GeeksforGeeks</div> 
+//       <button>Click here</button> 
+//     </Popup> 
+//   </div> 
+//   ) 
+// };
 
 export default function Home() {
   const [rows, setRows] = useState([{ input1: "", input2: "", input3: "" }]);    
@@ -20,88 +35,88 @@ export default function Home() {
   const [csvData, setCsvData] = useState<CsvData>([]);
 
   const options = [
-    { value: "0xA", label: "0xA" },
-    { value: "0xB", label: "0xB" },
-    { value: "0x16", label: "0x16" },
-    { value: "0x1A", label: "0x1A" },
-    { value: "0x1B", label: "0x1B" },
-    { value: "0x1C", label: "0x1C" },
-    { value: "0x21", label: "0x21" },
-    { value: "0x35", label: "0x35" },
-    { value: "0x100", label: "0x100" },
-    { value: "0x101", label: "0x101" },
-    { value: "0x102", label: "0x102" },
-    { value: "0x103", label: "0x103" },
-    { value: "0x104", label: "0x104" },
-    { value: "0x105", label: "0x105" },
-    { value: "0x106", label: "0x106" },
-    { value: "0x107", label: "0x107" },
-    { value: "0x108", label: "0x108" },
-    { value: "0x109", label: "0x109" },
-    { value: "0x10A", label: "0x10A" },
-    { value: "0x10B", label: "0x10B" },
-    { value: "0x10C", label: "0x10C" },
-    { value: "0x10D", label: "0x10D" },
-    { value: "0x10E", label: "0x10E" },
-    { value: "0x10F", label: "0x10F" },
-    { value: "0x110", label: "0x110" },
-    { value: "0x111", label: "0x111" },
-    { value: "0x112", label: "0x112" },
-    { value: "0x113", label: "0x113" },
-    { value: "0x114", label: "0x114" },
-    { value: "0x115", label: "0x115" },
-    { value: "0x116", label: "0x116" },
-    { value: "0x117", label: "0x117" },
-    { value: "0x118", label: "0x118" },
-    { value: "0x119", label: "0x119" },
-    { value: "0x11A", label: "0x11A" },
-    { value: "0x11B", label: "0x11B" },
-    { value: "0x200", label: "0x200" },
-    { value: "0x204", label: "0x204" },
-    { value: "0x20F", label: "0x20F" },
-    { value: "0x210", label: "0x210" },
-    { value: "0x211", label: "0x211" },
-    { value: "0x212", label: "0x212" },
-    { value: "0x213", label: "0x213" },
-    { value: "0x214", label: "0x214" },
-    { value: "0x215", label: "0x215" },
-    { value: "0x216", label: "0x216" },
-    { value: "0x217", label: "0x217" },
-    { value: "0x218", label: "0x218" },
-    { value: "0x219", label: "0x219" },
-    { value: "0x21B", label: "0x21B" },
-    { value: "0x21C", label: "0x21C" },
+    { value: "0xA", label: "0xA - MinorVersion" },
+    { value: "0xB", label: "0xB - MachType" },
+    { value: "0x16", label: "0x16 - HardWareVersion" },
+    { value: "0x1A", label: "0x1A - Rs485Addr" },
+    { value: "0x1B", label: "0x1B - MachModelNum2" },
+    { value: "0x1C", label: "0x1C - RS485Version" },
+    { value: "0x21", label: "0x21 - CpuBuidTime" },
+    { value: "0x35", label: "0x35 - ProductSNStr" },
+    { value: "0x100", label: "0x100 - BatSoc" },
+    { value: "0x101", label: "0x101 - BatVolt" },
+    { value: "0x102", label: "0x102 - ChargeCurr" },
+    { value: "0x103", label: "0x103 - DeviceBatTemper" },
+    { value: "0x104", label: "0x104 - Battery SOH" },
+    { value: "0x105", label: "0x105 - Battery rated capacity" },
+    { value: "0x106", label: "0x106 - Battery remain capacity" },
+    { value: "0x107", label: "0x107 - Pv1Volt" },
+    { value: "0x108", label: "0x108 - Pv1Curr" },
+    { value: "0x109", label: "0x109 - Pv1ChargePower" },
+    { value: "0x10A", label: "0x10A - PvTotalPower" },
+    { value: "0x10B", label: "0x10B - ChargeState" },
+    { value: "0x10C", label: "0x10C - BatteryCycleCount" },
+    { value: "0x10D", label: "0x10D - DcDataRevserved04" },
+    { value: "0x10E", label: "0x10E - ChargePower" },
+    { value: "0x10F", label: "0x10F - Pv2Volt" },
+    { value: "0x110", label: "0x110 - Pv2Curr" },
+    { value: "0x111", label: "0x111 - Pv2ChargePower" },
+    { value: "0x112", label: "0x112 - BatBmsVolt" },
+    { value: "0x113", label: "0x113 - BatBmsCurr" },
+    { value: "0x114", label: "0x114 - BatBmsTemp" },
+    { value: "0x115", label: "0x115 - BatBmsChgLimitVolt" },
+    { value: "0x116", label: "0x116 - BatBmsChgLimitCurr" },
+    { value: "0x117", label: "0x117 - BatBmsDchgLimitCurr" },
+    { value: "0x118", label: "0x118 - BmsAlarmH" },
+    { value: "0x119", label: "0x119 - BmsAlarmL" },
+    { value: "0x11A", label: "0x11A - BmsProtectH" },
+    { value: "0x11B", label: "0x11B - BmsProtectL" },
+    { value: "0x200", label: "0x200 - CurrErrReg" },
+    { value: "0x204", label: "0x204 - CurrFcode" },
+    { value: "0x20F", label: "0x20F - GridOnRemainTime" },
+    { value: "0x210", label: "0x210 - MachineState" },
+    { value: "0x211", label: "0x211 - PriorityFlag" },
+    { value: "0x212", label: "0x212 - BatVoltSum" },
+    { value: "0x213", label: "0x213 - GridVoltA" },
+    { value: "0x214", label: "0x214 - GridCurrA" },
+    { value: "0x215", label: "0x215 - GridFreq" },
+    { value: "0x216", label: "0x216 - InvVolA" },
+    { value: "0x217", label: "0x217 - InvCurA" },
+    { value: "0x218", label: "0x218 - InvFreq" },
+    { value: "0x219", label: "0x219 - LoadCurA" },
+    { value: "0x21B", label: "0x21B - LoadActivetPowerA" },
+    { value: "0x21C", label: "0x21C - LoadApparentPowerB" },
     { value: "0x21D", label: "0x21D" },
-    { value: "0x21E", label: "0x21E" },
-    { value: "0x21F", label: "0x21F" },
-    { value: "0x220", label: "0x220" },
-    { value: "0x221", label: "0x221" },
-    { value: "0x222", label: "0x222" },
-    { value: "0x223", label: "0x223" },
-    { value: "0x224", label: "0x224" },
-    { value: "0x225", label: "0x225" },
-    { value: "0x226", label: "0x226" },
+    { value: "0x21E", label: "0x21E - LineChgCurr" },
+    { value: "0x21F", label: "0x21F - LoadRatioA" },
+    { value: "0x220", label: "0x220 - LoadRatioA" },
+    { value: "0x221", label: "0x221 - TemperDC" },
+    { value: "0x222", label: "0x222 - TemperFC" },
+    { value: "0x223", label: "0x223 - TemperTR" },
+    { value: "0x224", label: "0x224 - TemperAmb" },
+    { value: "0x225", label: "0x225 - I_buck1" },
+    { value: "0x226", label: "0x226 - ParallCurRms" },
     { value: "0x227", label: "0x227" },
-    { value: "0x228", label: "0x228" },
-    { value: "0x229", label: "0x229" },
-    { value: "0x22A", label: "0x22A" },
-    { value: "0x22B", label: "0x22B" },
-    { value: "0x22C", label: "0x22C" },
-    { value: "0x22D", label: "0x22D" },
-    { value: "0x22E", label: "0x22E" },
-    { value: "0x22F", label: "0x22F" },
-    { value: "0x230", label: "0x230" },
-    { value: "0x231", label: "0x231" },
-    { value: "0x232", label: "0x232" },
-    { value: "0x233", label: "0x233" },
-    { value: "0x234", label: "0x234" },
-    { value: "0x235", label: "0x235" },
-    { value: "0x236", label: "0x236" },
-    { value: "0x237", label: "0x237" },
-    { value: "0x238", label: "0x238" },
-    { value: "0x239", label: "0x239" },
-    { value: "0x23A", label: "0x23A" }
-  ];
+    { value: "0x228", label: "0x228 - ChargeStatus" },
+    { value: "0x229", label: "0x229 - PBusVolt" },
+    { value: "0x22A", label: "0x22A - NB_BusVolt" },
+    { value: "0x22B", label: "0x22B - GridVolB" },
+    { value: "0x22C", label: "0x22C - GridVolC" },
+    { value: "0x22D", label: "0x22D - InvVoltB" },
+    { value: "0x22E", label: "0x22E - InvVoltC" },
+    { value: "0x22F", label: "0x22F - InvCurB" },
+    { value: "0x230", label: "0x230 - InvCurC" },
+    { value: "0x231", label: "0x231 - LoadCurB" },
+    { value: "0x232", label: "0x232 - LoadCurC" },
+    { value: "0x233", label: "0x233 - LoadActivePowerB" },
+    { value: "0x234", label: "0x234 - LoadApparentPowerC" },
+    { value: "0x235", label: "0x235 - LoadReactivePowerB" },
+    { value: "0x236", label: "0x236 - LoadReactivePowerC" },
+    { value: "0x237", label: "0x237 - LoadPowerFactorC" },
+    { value: "0x238", label: "0x238 - GridCurC" },
+    { value: "0x239", label: "0x239 - GridActivePowerA" },
+    { value: "0x23A", label: "0x23A - GridActivePowerB" }
+];
   
   const regAddrToIndex = new Map([
     [0xA, 0],
@@ -672,7 +687,7 @@ export default function Home() {
           </label>
         </div>
       </div>
-      <div className="flex flex-row items-center gap-12 mb-4 -ml-16">
+      <div className="flex flex-row items-center gap-20 mb-4 -mr-6">
         <label><u>Reg Address (Hex)</u></label>
         <div className="flex flex-row">
         <label> <u>Function Code</u> </label>
@@ -736,6 +751,7 @@ export default function Home() {
       <div className="flex flex-row gap-2">
         <button
           onClick={handleAddRow}
+          // className="mt-8 bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded"
           className="mt-8 bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded"
         >
           + Add Row
@@ -746,14 +762,23 @@ export default function Home() {
         >
           Download master.c
         </button>
-        <a
-          href="/SunGoldCommands.pdf"
-          download
-          className="mt-8 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center"
-        >
-          <FontAwesomeIcon icon={faFilePdf} className="mr-2" />
-          SunGold Commands
-        </a>
+        <Popup trigger={
+          <button className="mt-8 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded">
+            <FontAwesomeIcon icon={faFilePdf} className="mr-2" />View SunGold Commands </button>
+          }  
+          position="right center" modal> 
+          <div style={{ width: '790px', height: '700px' }}>
+            <iframe 
+              src="/SunGoldCommands.pdf" 
+              width="100%" 
+              height="100%"
+              style={{ border: 'none' }}
+            >
+              This browser does not support PDFs. Please download the PDF to view it: 
+              <a href="/SunGoldCommands.pdf">Download PDF</a>
+            </iframe>
+          </div> 
+        </Popup> 
       </div>
       </main>
   );  
