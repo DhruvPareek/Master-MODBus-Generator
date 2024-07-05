@@ -3,6 +3,7 @@ import Papa from "papaparse";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilePdf, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+import Image from 'next/image'
 
 type CsvData = {
   English_Name: string;
@@ -609,9 +610,15 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+    <main className="flex min-h-screen flex-col items-center justify-top p-15">
+      <Image
+      src="/HumbleLogo.png"
+      width={480}
+      height={360}
+      alt="Humble Logo"
+    />
       <div className="flex flex-row gap-2 mb-4">
-        Select Your Inverter
+        <u>Select Your Inverter</u>
       </div>
       <div className="flex flex-row gap-2 mb-14">
         <div className="flex items-center gap-2">
@@ -666,9 +673,9 @@ export default function Home() {
         </div>
       </div>
       <div className="flex flex-row items-center gap-12 mb-4 -ml-16">
-        <label>Reg Address (Hex)</label>
+        <label><u>Reg Address (Hex)</u></label>
         <div className="flex flex-row">
-        <label>Function Code </label>
+        <label> <u>Function Code</u> </label>
         <button
           className="text-white rounded flex items-center ml-2"
           onClick={() => alert("In this field, enter 03 for reading a value or 06 for writing a value.")}
@@ -676,7 +683,7 @@ export default function Home() {
           <FontAwesomeIcon icon={faCircleInfo} style={{color: "#e86bdc",}} className="ml-2" />
         </button>
         </div>
-        <label>Value to Write if Writing</label>
+        <label><u>Value to Write if Writing</u></label>
       </div>
       {rows.map((row, index) => (
         <div key={index} className="flex flex-row items-center gap-4 mb-4">
