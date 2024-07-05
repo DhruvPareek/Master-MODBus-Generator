@@ -2,7 +2,7 @@
 import Papa from "papaparse";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileCsv, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+import { faFilePdf, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 
 type CsvData = {
   English_Name: string;
@@ -740,11 +740,11 @@ export default function Home() {
           Download master.c
         </button>
         <a
-          href="/SunGoldCommandsNew.csv"
+          href="/SunGoldCommands.pdf"
           download
           className="mt-8 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center"
         >
-          <FontAwesomeIcon icon={faFileCsv} className="mr-2" />
+          <FontAwesomeIcon icon={faFilePdf} className="mr-2" />
           SunGold Commands
         </a>
       </div>
