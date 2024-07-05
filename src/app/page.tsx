@@ -671,7 +671,7 @@ export default function Home() {
         <label>Function Code </label>
         <button
           className="text-white rounded flex items-center ml-2"
-          onClick={() => alert("In this field, enter 03 for reading a value and 06 for writing a value.")}
+          onClick={() => alert("In this field, enter 03 for reading a value or 06 for writing a value.")}
         >
           <FontAwesomeIcon icon={faCircleInfo} style={{color: "#e86bdc",}} className="ml-2" />
         </button>
